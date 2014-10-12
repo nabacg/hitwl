@@ -59,10 +59,12 @@
    [:div.page-header [:h1 "Reagent Sandbox"]]
    [text-input :first-name "First name"]
    [text-input :sur-name "Surname"]
-   [selection-list :fav-snacks "Favourite Snacks"
-    [:beef "Beef"]
-    [:lamb "Lamb"]
-    [:cheese "Cheese"]]
+   [selection-list :excercise-type "Select type of Excercise"
+    [:leg-press "Leg Press"]
+    [:chest-press "Chest Press"]
+    [:shoulder-press "Shoulder Press"]
+    [:pull-down "Pull Down"]
+    [:pull-back "Pull Back"]]
    [:button {:type "submit"
              :class "btn btn-default"
              :onClick #(.log js/console (str @state))}
