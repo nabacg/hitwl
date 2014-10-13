@@ -1,5 +1,6 @@
 (ns hit-wl.core
-  (:require [reagent.core :as reagent :refer [atom]]))
+  (:require [reagent.core :as reagent :refer [atom]]
+            [ajax.core :refer [POST GET]]))
 
 (enable-console-print!)
 
@@ -11,9 +12,15 @@
   [:div
    [:div.page-header [:h1 "HIT Workout Logger"]]])
 
-
-
 (def state (atom {:doc {} :saved? false}))
+
+(defn save-state []
+  (POST "/save"
+        {:params (:doc @state)
+         :format :json
+         :handler (fn [_] (swap! state assoc :saved? true))}))
+
+
 
 (defn set-value! [id value]
   (swap! state assoc :saved? false)
@@ -65,9 +72,13 @@
     [:shoulder-press "Shoulder Press"]
     [:pull-down "Pull Down"]
     [:pull-back "Pull Back"]]
-   [:button {:type "submit"
-             :class "btn btn-default"
-             :onClick #(.log js/console (str @state))}
-    "Submit"]])
+   (if (:saved? @state)
+     [:p "Saved"]
+     [:button {:type "submit"
+               :class "btn btn-default"
+               :onClick save-state
+               ;; #(.log js/console (str @state))
+              }
+      "Submit"])])
 
 (reagent/render-component [home] (.getElementById js/document "content"))
