@@ -66,6 +66,8 @@
    [:div.page-header [:h1 "Reagent Sandbox"]]
    [text-input :first-name "First name"]
    [text-input :sur-name "Surname"]
+   [text-input :date "Date"]
+   [text-input :comments "Comments"]
    [selection-list :excercise-type "Select type of Excercise"
     [:leg-press "Leg Press"]
     [:chest-press "Chest Press"]
