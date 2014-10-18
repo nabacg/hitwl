@@ -63,7 +63,7 @@
 
 (defn home []
   [:div
-   [:div.page-header [:h1 "Reagent Sandbox"]]
+   [:div.page-header [:h1 "HIT Workout Logger"]]
    [text-input :first-name "First name"]
    [text-input :sur-name "Surname"]
    [text-input :date "Date"]
