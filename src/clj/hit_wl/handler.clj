@@ -19,15 +19,23 @@
             :db-name "hit-wl-db"
             :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
+(defn get-userdata [username]
+  (println "!!!!!!" username)
+  (->> (db/get-all "flatdata")
+       (filter #(= (:first-name %) username))
+       (map #(dissoc % :_id))))
 
 (defn save-document [doc]
   (pprint doc)
-  (db/save  doc "data"))
+  (db/save [doc] "flatdata"))
 
 
 
 (defroutes app-routes
   (GET "/" [] (slurp "resources/public/html/index.html"))
+  (GET "/userdata" {{username :username} :params}
+       (response
+        (get-userdata username)))
   (POST "/save" {body :body} (do (save-document body)
                                (response
                                 {:status  "OK"})))

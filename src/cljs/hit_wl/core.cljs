@@ -13,6 +13,7 @@
    [:div.page-header [:h1 "HIT Workout Logger"]]])
 
 (def state (atom {:doc {} :saved? false}))
+(def data-list (atom {:userdata {}}))
 
 (defn save-state []
   (POST "/save"
@@ -20,6 +21,11 @@
          :format :json
          :handler (fn [_] (swap! state assoc :saved? true))}))
 
+(defn get-userdata [username]
+  (GET  "/userdata"
+       {:params {:username username}
+        :format :json
+        :handler (fn [list] (swap! data-list assoc :userdata list))}))
 
 
 (defn set-value! [id value]
@@ -61,9 +67,27 @@
         (for [[k v] items]
           [list-item id k v states])]])))
 
+(defn table-row [headers row]
+  [:tr
+   (for [h headers]
+     [:td (str (row h))])])
+
+(defn draw-table [data]
+  ;;   (.log js/console (str  "AAAAA" data))
+  (let [headers (keys (first data))]
+    [:div
+     [:h1 "USERDATA"]
+     [:table
+      [:tr
+       (for [header headers]
+         [:th header])]]
+     (for [row data]
+       [table-row headers row])]))
+
 (defn home []
   [:div
    [:div.page-header [:h1 "HIT Workout Logger"]]
+   [draw-table (:userdata @data-list)]
    [text-input :first-name "First name"]
    [text-input :sur-name "Surname"]
    [text-input :date "Date"]
@@ -84,3 +108,5 @@
       "Submit"])])
 
 (reagent/render-component [home] (.getElementById js/document "content"))
+
+(get-userdata "Stefan")
