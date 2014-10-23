@@ -8,10 +8,6 @@
 (println "hello HIT world!")
 
 
-(defn home-2 []
-  [:div
-   [:div.page-header [:h1 "HIT Workout Logger"]]])
-
 (def state (atom {:doc {} :saved? false}))
 (def data-list (atom {:userdata {}}))
 
@@ -21,10 +17,14 @@
          :format :json
          :handler (fn [_] (swap! state assoc :saved? true))}))
 
-(defn get-userdata [username]
-  (GET  "/userdata"
+(defn get-userdata []
+  (GET  "/userprofile"
        {:format :json
-        :handler (fn [list] (swap! data-list assoc :userdata list))}))
+        :handler (fn [profile]
+                   (let [username (get profile "username") workouts (get profile "workouts")]
+                     (.log js/console username workouts)
+                     (swap! state assoc :username username)
+                        (swap! state assoc :workouts workouts)))}))
 
 
 (defn set-value! [id value]
@@ -72,7 +72,6 @@
      [:td (str (row h))])])
 
 (defn draw-table [data]
-  ;;   (.log js/console (str  "AAAAA" data))
   (let [headers (keys (first data))]
     [:div
      [:h1 "USERDATA"]
@@ -86,7 +85,8 @@
 (defn home []
   [:div
    [:div.page-header [:h1 "HIT Workout Logger"]]
-   [draw-table (:userdata @data-list)]
+   [row "Username" (:username @state)]
+   [draw-table (:workouts @state)]
    [text-input :first-name "First name"]
    [text-input :sur-name "Surname"]
    [text-input :date "Date"]
@@ -108,4 +108,4 @@
 
 (reagent/render-component [home] (.getElementById js/document "content"))
 
-(get-userdata "Stefan")
+(get-userdata)
