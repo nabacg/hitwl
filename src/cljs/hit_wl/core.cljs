@@ -23,8 +23,7 @@
 
 (defn get-userdata [username]
   (GET  "/userdata"
-       {:params {:username username}
-        :format :json
+       {:format :json
         :handler (fn [list] (swap! data-list assoc :userdata list))}))
 
 

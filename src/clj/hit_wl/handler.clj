@@ -5,7 +5,8 @@
             [ring.middleware.json :as ring-json]
             [ring.util.response :refer [resource-response response]]
             [clojure.pprint :refer [pprint]]
-            [hit-wl.mongodal :as db]))
+            [hit-wl.mongodal :as db]
+            [ring.middleware.basic-authentication :refer [wrap-basic-authentication]]))
 
                                         ;todo
                                         ;get a list from mongo
@@ -20,7 +21,7 @@
             :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
 (defn get-userdata [username]
-  (println "!!!!!!" username)
+  (println "AA " username)
   (->> (db/get-all "flatdata")
        (filter #(= (:first-name %) username))
        (map #(dissoc % :_id))))
@@ -44,9 +45,20 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
+(defn authenticated? [username password]
+  (= username password))
 
+(defn wrap-add-username-param [handler]
+  (fn [request]
+    (println request)
+    (handler
+     (update-in request
+                [:params]
+                #(assoc % :username (:basic-authentication request) )))))
 
 (def app
   (-> (handler/site app-routes)
       (ring-json/wrap-json-body {:keywords? true})
-      (ring-json/wrap-json-response)))
+      (ring-json/wrap-json-response)
+      wrap-add-username-param
+      (wrap-basic-authentication authenticated?)))
