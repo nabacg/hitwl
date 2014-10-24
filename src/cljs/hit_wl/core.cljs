@@ -18,13 +18,12 @@
          :handler (fn [_] (swap! state assoc :saved? true))}))
 
 (defn get-userdata []
-  (GET  "/userprofile"
+  (GET  "/user/data"
        {:format :json
-        :handler (fn [profile]
-                   (let [username (get profile "username") workouts (get profile "workouts")]
-                     (.log js/console username workouts)
+        :handler (fn [{username "username" workouts "workouts"}]
+                   (do
                      (swap! state assoc :username username)
-                        (swap! state assoc :workouts workouts)))}))
+                     (swap! state assoc :workouts workouts)))}))
 
 
 (defn set-value! [id value]

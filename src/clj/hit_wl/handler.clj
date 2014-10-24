@@ -1,5 +1,5 @@
 (ns hit-wl.handler
-  (:require [compojure.core :refer [GET POST PUT DELETE defroutes]]
+  (:require [compojure.core :as compojure :refer [GET POST PUT DELETE defroutes]]
             [compojure.handler :as handler]
             [compojure.route :as route]
             [ring.middleware.json :as ring-json]
@@ -51,18 +51,34 @@
             :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
 (defn get-userdata [username]
-    (->> (db/get-all "flatdata")
-       (filter #(= (:first-name %) username))
-       (map #(dissoc % :_id))))
+  {:username username
+   :workouts (->> (db/get-all "flatdata")
+        (filter #(= (:first-name %) username))
+        (map #(dissoc % :_id))
+        (into []))})
 
 (defn save-document [doc]
   (pprint doc)
   (db/save [doc] "flatdata"))
 
-
-
 (defroutes app-routes
-  (GET "/" [] (slurp "resources/public/html/index.html"))
+  (GET "/" [] (h/html5 pretty-head (pretty-body
+                                   [:a {:href "/login"} "Login"])))
+  (GET "/user/profile" []
+       (friend/authorize #{::user}
+                         (slurp "resources/public/html/index.html")))
+  (GET "/user/data" request
+       (friend/authorize #{::user}
+                         (->
+                          (:username (friend/current-authentication))
+                          (get-userdata)
+                          response)))
+  (POST "/user/save" {body :body}
+        (friend/authorize #{::user}
+                          (do (save-document body)
+                              (response
+                               {:status  "OK"}))))
+  (GET "/setup" [] (do  (init :dev) (response {:status "inited"})))
   (GET "/login" request
        (h/html5 pretty-head (pretty-body login-form)))
   (GET "/logout" req
@@ -74,22 +90,15 @@
                               "..."
                               (friend/current-authentication))))
   (GET "/role-user" req
-    (friend/authorize #{::user} "You're a user!"))
+       (friend/authorize #{::user}
+                         (do
+                           (pprint req)
+                           (println (friend/current-authentication))
+                           "You're a user!")))
   (GET "/role-admin" req
     (friend/authorize #{::admin} "You're an admin!"))
-  (GET "/userprofile" req
-       (do
-         (println "BB "  (friend/current-authentication))
-         (->
-          {:workouts (get-userdata "Stefan")}
-          (assoc :username "Stefan")
-          response)))
-  (POST "/save" {body :body} (do (save-document body)
-                               (response
-                                {:status  "OK"})))
-  (GET "/setup" [] (do  (init :dev) (response {:status "inited"})))
   (GET "/ping" [] (response "pong!"))
-  (route/resources "/")
+  (route/resources "/user")
   (route/not-found "Not Found"))
 
 ; a dummy in-memory user "database"
@@ -104,10 +113,12 @@
   (-> (handler/site app-routes)
       (friend/authenticate {:allow-anon? true
                             :login-uri "/login"
-                            :default-landing-uri "/"
-                            :unauthorized-handler #(-> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
-                                        response
-                                        (status 401))
+                            :default-landing-uri "/user/profile"
+                            :unauthorized-handler #(do
+                                                     ( println (friend/current-authentication))
+                                                     ( -> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
+                                                          response
+                                                          (status 401)))
                             :credential-fn
                             (partial creds/bcrypt-credential-fn users)
                             :workflows [(workflows/interactive-form)]})
