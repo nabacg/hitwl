@@ -51,8 +51,7 @@
             :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
 (defn get-userdata [username]
-  (println "AA " username )
-  (->> (db/get-all "flatdata")
+    (->> (db/get-all "flatdata")
        (filter #(= (:first-name %) username))
        (map #(dissoc % :_id))))
 
