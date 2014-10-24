@@ -12,7 +12,7 @@
 (def data-list (atom {:userdata {}}))
 
 (defn save-state []
-  (POST "/save"
+  (POST "/user/save"
         {:params (:doc @state)
          :format :json
          :handler (fn [_] (swap! state assoc :saved? true))}))
@@ -20,10 +20,8 @@
 (defn get-userdata []
   (GET  "/user/data"
        {:format :json
-        :handler (fn [{username "username" workouts "workouts"}]
-                   (do
-                     (swap! state assoc :username username)
-                     (swap! state assoc :workouts workouts)))}))
+        :handler (fn [{username "username" workouts "workouts" }]
+                   (swap! state merge {:username username :workouts workouts}))}))
 
 
 (defn set-value! [id value]
