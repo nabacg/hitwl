@@ -48,9 +48,7 @@
 (defn init [env]
   (db/init {:collection-name "flatdata"
             :db-name "hit-wl-db"
-            :uri (if (= env :prod) heroku-mongo-connection-uri nil)})
-  (if (nil? (db/get-all "users"))
-    (db/save users)))
+            :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
 (defn get-userdata [username]
   {:username username

@@ -1,11 +1,17 @@
 (ns hit-wl.core
   (:require [reagent.core :as reagent :refer [atom]]
+            [reagent-forms.core :refer [bind-fields]]
+            [reagent-forms.datepicker
+             :refer [parse-format format-date datepicker]]
             [ajax.core :refer [POST GET]]))
 
 (enable-console-print!)
 
+(defn console-log [str]
+  (.log js/console str))
 
-(def state (atom {:doc {} :type :pull-down :saved? false}))
+
+(def state (atom {:doc {} :edited-workout {} :saved? false}))
 
 (defn save-state []
   (POST "/user/save"
@@ -76,7 +82,8 @@
 (defn table-row [headers row]
   [:tr
    (for [h headers]
-     [:td (str (row h))])])
+     (do
+       [:td (str (row h))]))])
 
 (defn draw-table [data]
   (let [headers (keys (first data))]
@@ -104,11 +111,40 @@
       "Add Workout"])
    [draw-table (:workouts state-dict)]])
 
+(def edit-workout-form-template
+  [:div
+   (row "Date" [:datepicker {:field :datepicker :id :edited-workout.date}])
+   (row "Notes" [:textarea {:field :textarea :id :edited-workout.comments}])
+   [:div.form-group
+    [:label "pick an option"]
+    [:select.form-control {:field :list :id :edited-workout.excercise-type}
+     [:option {:key :leg-press} "Leg Press"]
+     [:option {:key :chest-press} "Chest Press"]
+     [:option {:key :shoulder-press} "Shoulder Press"]
+     [:option {:key :pull-down} "Pull Down"]
+     [:option {:key :pull-back} "Pull back"]]
+    [:button {:type "submit"
+              :class "btn btn-default"
+              :onClick #(let [new-workouts (conj (:workouts @state)
+                                                 (->> (:edited-workout @state)
+                                                      (map (fn [[k v]] [(name k) (str v)]))
+                                                      (into {})))]
+                          ;; (.log js/console (str  new-workouts))
+                          ;;(.log js/console (str @state))
+                                        ;transact!
+                          (swap! state assoc :workouts new-workouts)
+                          (swap! state assoc :edited-workout {})
+                          (swap! state update-in [:add-edit-workout-open?] not)
+                          (.log js/console (str (:workouts @state))))
+              }
+     "Save"]]])
+
+
 (defn add-edit-workout-form [state-map]
   [:div.row
-   [text-input [:new-workout :date] "Date"]
-   [text-input [:new-workout  :comments] "Notes"]
-   [selection-list  :excercise-type "Select type of Excercise"
+   [text-input [:edited-workout :date] "Date"]
+   [text-input [:edited-workout  :comments] "Notes"]
+   [selection-list  [:edited-workout :excercise-type] "Select type of Excercise"
     [:leg-press "Leg Press"]
     [:chest-press "Chest Press"]
     [:shoulder-press "Shoulder Press"]
@@ -118,20 +154,23 @@
 (defn home []
   [:div
    [main-user-panel @state]
+   ;; (if (:add-edit-workout-open? @state)
+   ;;   [add-edit-workout-form @state])
    (if (:add-edit-workout-open? @state)
-     [add-edit-workout-form @state])
-   [dropdown-input state [ :type] "Type of Excercise" [[:leg-press "Leg Press"]
-    [:chest-press "Chest Press"]
-    [:shoulder-press "Shoulder Press"]
-    [:pull-down "Pull Down"]
-    [:pull-back "Pull Back"]]]
+     [bind-fields edit-workout-form-template state])
+
+   ;; [dropdown-input state [ :type] "Type of Excercise" [[:leg-press "Leg Press"]
+   ;;                                                     [:chest-press "Chest Press"]
+   ;;                                                     [:shoulder-press "Shoulder Press"]
+   ;;                                                     [:pull-down "Pull Down"]
+   ;;                                                     [:pull-back "Pull Back"]]]
    (if (:saved? @state)
      [:p "Saved"]
      [:button {:type "submit"
                :class "btn btn-default"
                :onClick save-state
                ;; #(.log js/console (str @state))
-              }
+               }
       "Submit"])
    ])
 

@@ -8,6 +8,7 @@
                  [ring/ring-json "0.3.1"]
                  [org.clojure/clojurescript "0.0-2311"]
                  [reagent "0.4.2"]
+                 [reagent-forms "0.2.4"]
                  [cljs-ajax "0.2.6"]
                  [com.novemberain/monger "2.0.0"]
                  [com.cemerick/friend "0.2.1"]
