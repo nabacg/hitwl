@@ -48,7 +48,9 @@
 (defn init [env]
   (db/init {:collection-name "flatdata"
             :db-name "hit-wl-db"
-            :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
+            :uri (if (= env :prod) heroku-mongo-connection-uri nil)})
+  (if (nil? (db/get-all "users"))
+    (db/save users)))
 
 (defn get-userdata [username]
   {:username username
@@ -83,20 +85,6 @@
        (h/html5 pretty-head (pretty-body login-form)))
   (GET "/logout" req
     (friend/logout* (redirect (str (:context req) "/"))))
-  (GET "/requires-authentication" req
-       (friend/authenticated (str
-                              "Thanks for authenticating!"
-                              (nil? (friend/identity req))
-                              "..."
-                              (friend/current-authentication))))
-  (GET "/role-user" req
-       (friend/authorize #{::user}
-                         (do
-                           (pprint req)
-                           (println (friend/current-authentication))
-                           "You're a user!")))
-  (GET "/role-admin" req
-    (friend/authorize #{::admin} "You're an admin!"))
   (GET "/ping" [] (response "pong!"))
   (route/resources "/user")
   (route/not-found "Not Found"))
