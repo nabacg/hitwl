@@ -46,20 +46,24 @@
    (into [:div {:class "columns small-12"}] content)])
 
 (defn init [env]
-  (db/init {:collection-name "flatdata"
+  (db/init {:collection-name "workouts"
             :db-name "hit-wl-db"
             :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
 
 (defn get-userdata [username]
   {:username username
-   :workouts (->> (db/get-all "flatdata")
-        (filter #(= (:first-name %) username))
+   :workouts (->> (db/get-all "workouts")
+        (filter #(= (:username %) username))
         (map #(dissoc % :_id))
         (into []))})
 
-(defn save-document [doc]
-  (pprint doc)
-  (db/save [doc] "flatdata"))
+(defn save-document [{username :username workouts :workouts :as state-map}]
+  (pprint state-map)
+
+  (db/save (->> workouts
+                (filter :is-new?)
+                (map #(assoc % :username username))
+                ) "workouts"))
 
 (defroutes app-routes
   (GET "/" [] (h/html5 pretty-head (pretty-body

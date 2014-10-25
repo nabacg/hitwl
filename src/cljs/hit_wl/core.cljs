@@ -15,7 +15,7 @@
 
 (defn save-state []
   (POST "/user/save"
-        {:params (:doc @state)
+        {:params  @state
          :format :json
          :handler (fn [_] (swap! state assoc :saved? true))}))
 
@@ -128,7 +128,7 @@
               :onClick #(let [new-workouts (conj (:workouts @state)
                                                  (->> (:edited-workout @state)
                                                       (map (fn [[k v]] [(name k) (str v)]))
-                                                      (into {})))]
+                                                      (into {:is-new? true})))]
                           ;; (.log js/console (str  new-workouts))
                           ;;(.log js/console (str @state))
                                         ;transact!
@@ -137,7 +137,7 @@
                           (swap! state update-in [:add-edit-workout-open?] not)
                           (.log js/console (str (:workouts @state))))
               }
-     "Save"]]])
+     "Add"]]])
 
 
 (defn add-edit-workout-form [state-map]
