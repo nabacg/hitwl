@@ -111,6 +111,19 @@
       "Add Workout"])
    [draw-table (:workouts state-dict)]])
 
+(defn append-new-workout []
+  (let [new-workouts (conj (:workouts @state)
+                           (->> (:edited-workout @state)
+                                (map (fn [[k v]] [(name k) (str v)]))
+                                (into {:is-new? true})))]
+                          ;; (.log js/console (str  new-workouts))
+                          ;;(.log js/console (str @state))
+                                        ;transact!
+    (swap! state assoc :workouts new-workouts)
+    (swap! state assoc :edited-workout {})
+    (swap! state update-in [:add-edit-workout-open?] not)
+    (.log js/console (str (:workouts @state)))))
+
 (def edit-workout-form-template
   [:div
    (row "Date" [:datepicker {:field :datepicker :id :edited-workout.date}])
@@ -125,17 +138,7 @@
      [:option {:key :pull-back} "Pull back"]]
     [:button {:type "submit"
               :class "btn btn-default"
-              :onClick #(let [new-workouts (conj (:workouts @state)
-                                                 (->> (:edited-workout @state)
-                                                      (map (fn [[k v]] [(name k) (str v)]))
-                                                      (into {:is-new? true})))]
-                          ;; (.log js/console (str  new-workouts))
-                          ;;(.log js/console (str @state))
-                                        ;transact!
-                          (swap! state assoc :workouts new-workouts)
-                          (swap! state assoc :edited-workout {})
-                          (swap! state update-in [:add-edit-workout-open?] not)
-                          (.log js/console (str (:workouts @state))))
+              :onClick append-new-workout
               }
      "Add"]]])
 
