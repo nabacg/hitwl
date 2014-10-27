@@ -124,8 +124,7 @@
          [:input.form-control
           {:field :numeric :id (keyword (str :edited-workout.excercises e))}])))
 
-
-(def edit-workout-form-template
+(def edit-workout-template
   [:div
    [:h3 "Add new workout"]
    [:div.row
@@ -133,9 +132,11 @@
     [:div.col-md-3 [:datepicker {:field :datepicker :id :edited-workout.date}]]
 
     [:div.col-md-2 [:span "Notes"]]
-    [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]
+    [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]])
 
-   [:h3 "Record Exercise"]
+(def add-excercise-form
+  [:div
+   [:h3 "Add Exercise"]
    [:div.row
     [:div.col-md-2
      [:ul.list-group
@@ -203,17 +204,17 @@
 
 (defn home []
   [:div
-
-
    (if (not (:add-edit-workout-open? @state))
      [main-user-panel @state])
    (if (:add-edit-workout-open? @state)
-     ;;      [draw-table (:workouts @state)]
      [:div
+      [bind-fields
+       edit-workout-template
+       state]
       [:h3 "Excercises"]
       [draw-table (get-in @state [:edited-workout :excercises])]
       [bind-fields
-       edit-workout-form-template
+       add-excercise-form
        state]])
 
    [:hr]

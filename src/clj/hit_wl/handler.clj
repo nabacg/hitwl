@@ -63,6 +63,7 @@
   (db/save (->> workouts
                 (filter :is-new?)
                 (map #(assoc % :username username))
+                (map #(dissoc % :is-new?))
                 ) "workouts"))
 
 (defroutes app-routes
