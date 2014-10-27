@@ -10,6 +10,7 @@
                  [reagent "0.4.2"]
                  [reagent-forms "0.2.4"]
                  [cljs-ajax "0.2.6"]
+                 [json-html "0.2.3"]
                  [com.novemberain/monger "2.0.0"]
                  [com.cemerick/friend "0.2.1"]
                  [hiccup "1.0.5"]]

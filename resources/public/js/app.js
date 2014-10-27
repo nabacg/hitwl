@@ -14,4 +14,6 @@ goog.addDependency("../reagent/core.js", ['reagent.core'], ['reagent.impl.util',
 goog.addDependency("../reagent_forms/datepicker.js", ['reagent_forms.datepicker'], ['reagent.core', 'cljs.core', 'clojure.string']);
 goog.addDependency("../clojure/walk.js", ['clojure.walk'], ['cljs.core']);
 goog.addDependency("../reagent_forms/core.js", ['reagent_forms.core'], ['goog.string', 'reagent.core', 'cljs.core', 'reagent_forms.datepicker', 'goog.string.format', 'clojure.string', 'clojure.walk']);
-goog.addDependency("../hit_wl/core.js", ['hit_wl.core'], ['ajax.core', 'reagent.core', 'cljs.core', 'reagent_forms.core', 'reagent_forms.datepicker']);
+goog.addDependency("../hiccups/runtime.js", ['hiccups.runtime'], ['cljs.core', 'clojure.string']);
+goog.addDependency("../json_html/core.js", ['json_html.core'], ['hiccups.runtime', 'cljs.core', 'clojure.string']);
+goog.addDependency("../hit_wl/core.js", ['hit_wl.core'], ['ajax.core', 'reagent.core', 'cljs.core', 'reagent_forms.core', 'reagent_forms.datepicker', 'json_html.core']);

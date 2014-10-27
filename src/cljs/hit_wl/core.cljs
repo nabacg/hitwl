@@ -3,7 +3,8 @@
             [reagent-forms.core :refer [bind-fields]]
             [reagent-forms.datepicker
              :refer [parse-format format-date datepicker]]
-            [ajax.core :refer [POST GET]]))
+            [ajax.core :refer [POST GET]]
+            [json-html.core :refer [edn->hiccup]]))
 
 (enable-console-print!)
 
@@ -134,10 +135,6 @@
     [:div.col-md-2 [:span "Notes"]]
     [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]
 
-   [:div.row
-    [:h3 "Excercises"]
-    (draw-table (get-in @state [:edited-workout :excercises]))] ;;AND WHY THE HELL THIS WON'T WORK!
-
    [:h3 "Record Exercise"]
    [:div.row
     [:div.col-md-2
@@ -206,14 +203,22 @@
 
 (defn home []
   [:div
-   ;; [:h3 "Excercises"]
-   ;; [draw-table (get-in state-dict [:edited-workout :excercises])]
+
+
    (if (not (:add-edit-workout-open? @state))
      [main-user-panel @state])
    (if (:add-edit-workout-open? @state)
      ;;      [draw-table (:workouts @state)]
-     [bind-fields edit-workout-form-template state])
-   ])
+     [:div
+      [:h3 "Excercises"]
+      [draw-table (get-in @state [:edited-workout :excercises])]
+      [bind-fields
+       edit-workout-form-template
+       state]])
+
+   [:hr]
+   [:h1 "State"]
+   [edn->hiccup @state]])
 
 (reagent/render-component [home] (.getElementById js/document "content"))
 
