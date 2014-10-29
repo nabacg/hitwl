@@ -66,11 +66,19 @@
         (for [[k v] items]
           [list-item state-atom id k v states])]])))
 
+
+(defn list-items [lst]
+  [:ul.list-group
+   (for [i lst]
+     [:li i])])
+
 (defn table-row [headers row]
   [:tr
    (for [h headers]
      (do
-       [:td (str (row h))]))])
+       [:td (if (coll? (row h))
+                    (list-items (row h))
+                    (str  (row h)))]))])
 
 (defn draw-table [data]
   (let [headers (keys (first data))]
