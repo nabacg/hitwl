@@ -22,7 +22,6 @@
   :aliases {"up" ["pdo" "cljsbuild" "auto" "dev," "frodo"]
             "prod-release" ["pdo" "cljsbuild" "once" "release," "frodo"]}
   :frodo/config-resource "config.edn"
-  :min-lein-version "2.0.0"
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
