@@ -14,7 +14,8 @@
                  [com.novemberain/monger "2.0.0"]
                  [com.cemerick/friend "0.2.1"]
                  [jarohen/nomad "0.7.0"]
-                 [hiccup "1.0.5"]]
+                 [hiccup "1.0.5"]
+                 [javax.servlet/servlet-api "2.5"]]
   :source-paths ["src/clj"]
   :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]
             [lein-pdo "0.1.1"]
@@ -35,5 +36,4 @@
                                    :optimizations :advanced
                                    :pretty-print false}}]}
   :profiles
-  {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                        [ring-mock "0.1.5"]]}})
+  {:dev {:dependencies [[ring-mock "0.1.5"]]}})
