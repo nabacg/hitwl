@@ -14,6 +14,8 @@
             [hiccup.page :as h]
             [hiccup.element :as e]
             [cemerick.friend :as friend]
+            [nomad :refer [defconfig]]
+            [clojure.java.io :as io]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])))
 
@@ -23,6 +25,8 @@
                                         ;display a list in a React Widget
 
 (def heroku-mongo-connection-uri "")
+
+(defconfig app-config (io/resource "config.edn"))
 
 (def login-form
   [:div {:class "row"}
@@ -36,7 +40,8 @@
 
 (def pretty-head
   [:head [:link {:href "/css/normalize.css" :rel "stylesheet" :type "text/css"}]
-         [:link {:href "/css/foundation.min.css" :rel "stylesheet" :type "text/css"}]
+   [:link {:href "/css/found
+ation.min.css" :rel "stylesheet" :type "text/css"}]
          [:style {:type "text/css"} "ul { padding-left: 2em }"]
          [:script {:src "/js/foundation.min.js" :type "text/javascript"}]])
 
@@ -46,9 +51,13 @@
    (into [:div {:class "columns small-12"}] content)])
 
 (defn init [env]
-  (db/init {:collection-name "workouts"
-            :db-name "hit-wl-db"
-            :uri (if (= env :prod) heroku-mongo-connection-uri nil)}))
+  (println "INIT ")
+  (pprint (app-config))
+
+  (comment  {:collection-name "workouts"
+             :db-name "hit-wl-db"
+             :uri (if (= env :prod) heroku-mongo-connection-uri nil)})
+  (db/init (:db-config (app-config))) )
 
 (defn get-userdata [username]
   {:username username

@@ -13,13 +13,15 @@
                  [json-html "0.2.3"]
                  [com.novemberain/monger "2.0.0"]
                  [com.cemerick/friend "0.2.1"]
+                 [jarohen/nomad "0.7.0"]
                  [hiccup "1.0.5"]]
   :source-paths ["src/clj"]
   :plugins [[lein-ring "0.8.12"]
             [lein-cljsbuild "1.0.4-SNAPSHOT"]
             [lein-pdo "0.1.1"]]
   :aliases {"up" ["pdo" "cljsbuild" "auto" "dev," "ring" "server" ]}
-  :ring {:handler hit-wl.handler/app}
+  :ring {:handler hit-wl.handler/app
+         :open-browser? false}
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"

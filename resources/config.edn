@@ -1,0 +1,11 @@
+{:nomad/environments
+ {"dev"
+  {:db-config
+   {:collection-name "workouts"
+    :db-name "hit-wl-db"}}
+  "heroku"
+  {:db-config
+   {:collection-name "workouts"
+    :db-name "hit-wl-db"
+    :uri ""}}}
+ }
