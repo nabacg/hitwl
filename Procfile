@@ -1,1 +1,1 @@
-web: NOMAD_ENV=heroku lein prod-release
+web: NOMAD_ENV=heroku lein up
