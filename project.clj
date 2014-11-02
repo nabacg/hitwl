@@ -16,12 +16,12 @@
                  [jarohen/nomad "0.7.0"]
                  [hiccup "1.0.5"]]
   :source-paths ["src/clj"]
-  :plugins [[lein-ring "0.8.12"]
-            [lein-cljsbuild "1.0.4-SNAPSHOT"]
-            [lein-pdo "0.1.1"]]
-  :aliases {"up" ["pdo" "cljsbuild" "auto" "dev," "ring" "server" ]}
-  :ring {:handler hit-wl.handler/app
-         :open-browser? false}
+  :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]
+            [lein-pdo "0.1.1"]
+            [jarohen/lein-frodo "0.4.1"]]
+  :aliases {"up" ["pdo" "cljsbuild" "auto" "dev," "frodo"]
+            "prod-release" ["pdo" "cljsbuild" "once" "release," "frodo"]}
+  :frodo/config-resource "config.edn"
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"

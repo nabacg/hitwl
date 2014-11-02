@@ -14,17 +14,11 @@
             [hiccup.page :as h]
             [hiccup.element :as e]
             [cemerick.friend :as friend]
-            [nomad :refer [defconfig]]
             [clojure.java.io :as io]
             (cemerick.friend [workflows :as workflows]
-                             [credentials :as creds])))
-
-                                        ;todo
-                                        ;get a list from mongo
-                                        ;send this list to UI
-                                        ;display a list in a React Widget
-
-(def heroku-mongo-connection-uri "")
+                             [credentials :as creds])
+            [nomad :refer [defconfig]]
+            [frodo.web :refer [App]]))
 
 (defconfig app-config (io/resource "config.edn"))
 
@@ -50,8 +44,8 @@
    (into [:div {:class "columns small-12"}] content)])
 
 (defn get-db-config []
-  (-> (:db-config (app-config))
-      (assoc :uri (System/getenv "MONGOHQ_URL"))))
+  (pprint (app-config))
+  (:db-config (app-config)))
 
 (defn init-middleware [handler]
   ;;dummy middleware handler to execute some init logic on app startup
@@ -128,3 +122,12 @@
       (ring-params/wrap-params)
       (session/wrap-session)
       ))
+
+
+(def frodo-app (reify App
+                 (start! [_]
+                   (do
+                     (println " starting app")
+                     {:frodo/handler app}))
+                 (stop! [_ system]
+                   (println "stopping app"))))
