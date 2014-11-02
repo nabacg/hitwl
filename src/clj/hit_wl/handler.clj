@@ -40,8 +40,7 @@
 
 (def pretty-head
   [:head [:link {:href "/css/normalize.css" :rel "stylesheet" :type "text/css"}]
-   [:link {:href "/css/found
-ation.min.css" :rel "stylesheet" :type "text/css"}]
+   [:link {:href "/css/foundation.min.css" :rel "stylesheet" :type "text/css"}]
          [:style {:type "text/css"} "ul { padding-left: 2em }"]
          [:script {:src "/js/foundation.min.js" :type "text/javascript"}]])
 
@@ -50,14 +49,14 @@ ation.min.css" :rel "stylesheet" :type "text/css"}]
   [:body {:class "row"}
    (into [:div {:class "columns small-12"}] content)])
 
-(defn init [env]
-  (println "INIT ")
-  (pprint (app-config))
+(defn get-db-config []
+  (-> (:db-config (app-config))
+      (assoc :uri (System/getenv "MONGOHQ_URL"))))
 
-  (comment  {:collection-name "workouts"
-             :db-name "hit-wl-db"
-             :uri (if (= env :prod) heroku-mongo-connection-uri nil)})
-  (db/init (:db-config (app-config))) )
+(defn init-middleware [handler]
+  ;;dummy middleware handler to execute some init logic on app startup
+  (db/init (get-db-config))
+  handler)
 
 (defn get-userdata [username]
   {:username username
@@ -92,7 +91,6 @@ ation.min.css" :rel "stylesheet" :type "text/css"}]
                           (do (save-document body)
                               (response
                                {:status  "OK"}))))
-  (GET "/setup" [] (do  (init :dev) (response {:status "inited"})))
   (GET "/login" request
        (h/html5 pretty-head (pretty-body login-form)))
   (GET "/logout" req
@@ -111,6 +109,7 @@ ation.min.css" :rel "stylesheet" :type "text/css"}]
 
 (def app
   (-> (handler/site app-routes)
+      (init-middleware)
       (friend/authenticate {:allow-anon? true
                             :login-uri "/login"
                             :default-landing-uri "/user/profile"
