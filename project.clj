@@ -32,7 +32,6 @@
                        {:id "release"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
-
                                    :optimizations :advanced
                                    :source-map true}}]}
   :profiles
