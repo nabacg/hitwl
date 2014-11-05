@@ -83,12 +83,12 @@
 (defn draw-table [data]
   (let [headers (keys (first data))]
     [:div.row
-     [:table
+     [:table.table.table-hover.table-bordered
       [:tr
        (for [header headers]
-         [:th header])]]
-     (for [row data]
-       [table-row headers row])]))
+         [:th header])]
+      (for [row data]
+        [table-row headers row])]]))
 
 (defn open-add-edit-workout []
   (swap! state update-in [:add-edit-workout-open?] not))
