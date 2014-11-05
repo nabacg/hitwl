@@ -32,7 +32,8 @@
                        {:id "release"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
+                                   :output-dir "resources/public/js/release"
                                    :optimizations :advanced
-                                   :source-map true}}]}
+                                   :source-map "resources/public/js/app.js.map"}}]}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]]}})
