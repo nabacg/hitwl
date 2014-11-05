@@ -76,6 +76,8 @@
   [:tr
    (for [h headers]
      (do
+       (.log js/console (str  "table-row " (coll? (row h)) " "
+                              (sequential? (row h)) (get  (row h) 0) ) )
        [:td (if (coll? (row h))
                     (list-items (row h))
                     (str  (row h)))]))])
