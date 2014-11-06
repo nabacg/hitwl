@@ -13,6 +13,7 @@
             [hit-wl.mongodal :as db]
             [hiccup.page :as h]
             [hiccup.element :as e]
+            [clojure.edn :as edn]
             [cemerick.friend :as friend]
             [clojure.java.io :as io]
             (cemerick.friend [workflows :as workflows]
@@ -55,9 +56,13 @@
 (defn get-userdata [username]
   {:username username
    :workouts (->> (db/get-all "workouts")
-        (filter #(= (:username %) username))
-        (map #(dissoc % :_id))
-        (into []))})
+                  (filter #(= (:username %) username))
+                  (map #(dissoc % :_id))
+                  (map #(->> %
+                             (map (fn [[k v]] [k (if (= k :date) v
+                                                    (edn/read-string v))]))
+                             (into {})))
+                  (into []))})
 
 (defn save-document [{username :username workouts :workouts :as state-map}]
   (pprint state-map)
@@ -65,8 +70,8 @@
   (db/save (->> workouts
                 (filter :is-new?)
                 (map #(assoc % :username username))
-                (map #(dissoc % :is-new?))
-                ) "workouts"))
+                (map #(dissoc % :is-new?)))
+           "workouts"))
 
 (defroutes app-routes
   (GET "/" [] (h/html5 pretty-head (pretty-body

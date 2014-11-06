@@ -70,16 +70,16 @@
 (defn list-items [lst]
   [:ul.list-group
    (for [i lst]
-     [:li i])])
+     [:li.list-group-item
+      (str i)
+      (comment  (if (coll? i)
+                  (list-items i)
+                  (str i)))])])
 
 (defn table-row [headers row]
   [:tr
    (for [h headers]
      (do
-       (comment  (.log js/console (str (for [a (row h)] ["." a])))
-                 (.log js/console (str  "table-row " (coll? (row h)) " "
-                                        (sequential? (row h))
-                                        ) ))
        [:td (if (coll? (row h))
                     (list-items (row h))
                     (str  (row h)))]))])
