@@ -4,9 +4,13 @@
             [reagent-forms.datepicker
              :refer [parse-format format-date datepicker]]
             [ajax.core :refer [POST GET]]
-            [json-html.core :refer [edn->hiccup]]))
+            [json-html.core :refer [edn->hiccup]]
+            [clojure.browser.repl :as repl]
+            [cljs-time.core :as dt]))
 
 (enable-console-print!)
+
+(repl/connect "http://localhost:9000/repl")
 
 (defn console-log [item]
   (.log js/console (str item)))
@@ -94,8 +98,22 @@
       (for [row data]
         [table-row headers row])]]))
 
+(defn get-current-date-map []
+  (let [now (dt/now)]
+    {:year (dt/year now)
+     :month (dt/month now)
+     :day (dt/day now)}))
+
 (defn open-add-edit-workout []
-  (swap! state update-in [:add-edit-workout-open?] not))
+  (console-log (dt/today))
+  (console-log (dt/date-time 2014 11 12))
+  (comment  (let [now (dt/time-now)
+                  y (dt/year now)
+                  m (dt/month (.getMonth now))
+                  d (dt/day now)]))
+  (swap! state #(->  %
+                     (assoc-in [:edited-workout :date] (get-current-date-map))
+                     (update-in [:add-edit-workout-open?] not))))
 
 (defn main-user-panel [state-dict]
   [:div
@@ -135,16 +153,6 @@
     (row (str e)
          [:input.form-control
           {:field :numeric :id (keyword (str :edited-workout.excercises e))}])))
-
-(def edit-workout-template
-  [:div
-   [:h3 "Add new workout"]
-   [:div.row
-    [:div.col-md-2 [:span  "Date"]]
-    [:div.col-md-3 [:datepicker {:field :datepicker :id :edited-workout.date}]]
-
-    [:div.col-md-2 [:span "Notes"]]
-    [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]])
 
 (def add-excercise-form
   [:div
@@ -214,20 +222,37 @@
      [:option {:key :pull-down} "Pull Down"]
      [:option {:key :pull-back} "Pull back"]]]
 
+(def edit-workout-template
+  [:div
+   [:h3 "Add new workout"]
+   [:div.row
+    [:div.col-md-2 [:span  "Date"]]
+    [:div.col-md-3 [:input {:field :datepicker :id :edited-workout.date}]]]
+   [:div.row
+    [:div.col-md-2 [:span "Notes"]]
+    [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]])
+
+
+
 (defn home []
   [:div
    (if (not (:add-edit-workout-open? @state))
      [main-user-panel @state])
    (if (:add-edit-workout-open? @state)
-     [:div
-      [bind-fields
-       edit-workout-template
-       state]
-      [:h3 "Excercises"]
-      [draw-table (get-in @state [:edited-workout :excercises])]
-      [bind-fields
-       add-excercise-form
-       state]])
+     [bind-fields
+      edit-workout-template
+      state])
+   (comment
+     (if (:add-edit-workout-open? @state)
+       [:div
+        [bind-fields
+         edit-workout-template
+         state]
+        [:h3 "Excercises"]
+        [draw-table (get-in @state [:edited-workout :excercises])]
+        [bind-fields
+         add-excercise-form
+         state]]))
 
    [:hr]
    [:h1 "State"]
