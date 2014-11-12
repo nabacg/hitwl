@@ -9,12 +9,14 @@
             [ring.middleware.session :as session]
             [ring.util.response
              :refer [resource-response response redirect status]]
+            [ring.server.standalone :as server]
             [clojure.pprint :refer [pprint]]
             [hit-wl.mongodal :as db]
             [hiccup.page :as h]
             [hiccup.element :as e]
             [clojure.edn :as edn]
             [cemerick.friend :as friend]
+            [cemerick.austin]
             [clojure.java.io :as io]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
@@ -48,10 +50,7 @@
   (pprint (app-config))
   (:db-config (app-config)))
 
-(defn init-middleware [handler]
-  ;;dummy middleware handler to execute some init logic on app startup
-  (db/init (get-db-config))
-  handler)
+
 
 (defn get-userdata [username]
   {:username username
@@ -95,6 +94,8 @@
   (GET "/logout" req
     (friend/logout* (redirect (str (:context req) "/"))))
   (GET "/ping" [] (response "pong!"))
+  (GET "/austin-connect-browser-repl.js" []
+       (cemerick.austin.repls/browser-connected-repl-js))
   (route/resources "/user")
   (route/not-found "Not Found"))
 
@@ -105,6 +106,19 @@
             "Stefan" {:username "Stefan"
                     :password (creds/hash-bcrypt "stefan123")
                     :roles #{::user}}})
+
+(defn init-cljs-repl []
+  (def repl-env (reset! cemerick.austin.repls/browser-repl-env
+                        (cemerick.austin/repl-env)))
+  (pprint repl-env))
+(defn start-cljs-repl []
+  (cemerick.austin.repls/cljs-repl hit-wl.handler/repl-env))
+
+(defn init-middleware [handler]
+  ;;dummy middleware handler to execute some init logic on app startup
+  (db/init (get-db-config))
+  (init-cljs-repl)
+  handler)
 
 (def app
   (-> (handler/site app-routes)
@@ -128,6 +142,12 @@
       (session/wrap-session)
       ))
 
+
+(defn start-server [port]
+  (server/serve #'app
+                {:port port
+                 :join? false
+                 :open-browser? false}))
 
 (def frodo-app (reify App
                  (start! [_]
