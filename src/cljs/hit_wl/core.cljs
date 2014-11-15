@@ -13,12 +13,14 @@
 (repl/connect "http://localhost:9000/repl")
 
 
-
 (defn console-log [item]
   (.log js/console (str item)))
 
 
-(def state (atom {:doc {} :edited-workout {:excercises []} :saved? false}))
+(def state (atom {:doc {}
+                  :edited-workout {:excercises []}
+                  :current-view :main-user-panel
+                  :saved? false}))
 
 (defn save-state []
   (POST "/user/save"
@@ -115,7 +117,7 @@
                   d (dt/day now)]))
   (swap! state #(->  %
                      (assoc-in [:edited-workout :date] (get-current-date-map))
-                     (update-in [:add-edit-workout-open?] not))))
+                     (assoc :current-view :add-workout-panel))))
 
 (defn main-user-panel [state-dict]
   [:div
@@ -142,12 +144,11 @@
                            (->> (:edited-workout @state)
                                 (map (fn [[k v]] [(name k) (str v)]))
                                 (into {:is-new? true})))]
-                          ;; (.log js/console (str  new-workouts))
-                          ;;(.log js/console (str @state))
-                                        ;transact!
-    (swap! state assoc :workouts new-workouts)
-    (swap! state assoc :edited-workout {})
-    (swap! state update-in [:add-edit-workout-open?] not)
+
+    (swap! state #(-> %
+                     (assoc :workouts new-workouts)
+                     (assoc :edited-workout {})
+                     (assoc :current-view :main-user-panel)))
     (console-log (:workouts @state))))
 
 (defn draw-excercise-panel []
@@ -228,22 +229,105 @@
   [:div
    [:h3 "Add new workout"]
    [:div.row
-    [:div.col-md-2 [:span  "Date"]]
-    [:div.col-md-3 [:input {:field :datepicker :id :edited-workout.date}]]]
+    [:div.col-md-6 [:span  "Date"]]
+    [:div.col-md-6 [:input {:field :datepicker :id :edited-workout.date}]]]
    [:div.row
-    [:div.col-md-2 [:span "Notes"]]
-    [:div.col-md-4 [:textarea {:field :textarea :id :edited-workout.comments}]]]])
+    [:div.col-md-6 [:span "Notes"]]
+    [:div.col-md-6 [:textarea.span6
+                    {:field :textarea :id :edited-workout.comments}]]]
+   [:div.row]
+   [:div.row
+    [:div.col-md-6
+     [:button.btn.btn-block
+      {:onClick   #(swap! state (fn [old-state]
+                                  (-> old-state
+                                      (assoc :current-view :main-user-panel)
+                                      (assoc :edited-workout {}))))}
+      "Cancel"]]
+    [:div.col-md-6
+     [:button.btn.btn-block.btn-primary
+      {:onClick #(swap! state (fn [old-state]
+                                (-> old-state
+                                    (assoc :current-view :add-excercise-panel)
+                                    (update-in [:edited-workout :new] {}))))}
+       "Add Excercise"]]]])
+
+(def add-excercise-template
+  [:div
+   [:div.row
+    [:div.col-md-12
+     [:h3 "New Excercise"]]]
+   [:div.row
+    [:div.col-md-6
+     [:span "Type"]]
+    [:div.col-md-4
+     [:ul.list-group
+      {:field :single-select :id :edited-workout.new.exercise-type}
+      [:li.list-group-item  {:key :leg-press} "Leg Press"]
+      [:li.list-group-item  {:key :chest-press} "Chest Press"]
+      [:li.list-group-item  {:key :shoulder-press} "Shoulder Press"]
+      [:li.list-group-item  {:key :pull-down} "Pull Down"]
+      [:li.list-group-item  {:key :pull-back} "Pull back"]]]]
+   [:div.row
+      [:div.col-md-1 [:span "Reps"]]
+      [:div.col-md-1
+       [:input.form-control
+        {:field :numeric :id :edited-workout.new.reps}]]]
+   [:div.row
+    [:div.col-md-1 [:span "TUL"]]
+    [:div.col-md-1
+     [:input.form-control
+      {:field :numeric :id :edited-workout.new.TUL}]]]
+   [:div.row
+    [:div.col-md-1 [:span "Technique"]]
+    [:div.col-md-2
+     [:select.form-control {:field :list :id :edited-workout.new.technique}
+      [:option {:key :super-slow} "Super Slow"]
+      [:option {:key :rest-pause} "Rest Pause"]
+      [:option {:key :standard} "Standard"]]]]
+   [:div.row
+    [:div.col-md-1 [:span "Notes"]]
+    [:div.col-md-2
+     [:textarea {:field :textarea :id :edited-workout.new.comments}]]]
+
+   [:div.row
+    [:div.col-md-4
+     [:button.btn.btn-block
+      {:onClick   #(swap! state (fn [old-state]
+                                  (-> old-state
+                                      (assoc :current-view :main-user-panel)
+                                      (assoc :edited-workout {}))))}
+      "Cancel"]]
+    [:div.col-md-4
+     [:button.btn.btn-block.btn-primary
+      {:onClick #(swap! state (fn [old-state]
+                                (-> old-state
+                                    (assoc :current-view :add-excercise-panel)
+                                    (update-in [:edited-workout :excercises] conj
+                                               (get-in old-state [:edited-workout :new]))
+                                    (update-in [:edited-workout :new] {:excercises []}))))}
+      "Add Another Excercise"]]
+    [:div.col-md-4
+     [:button.btn.btn-block
+      {:onClick append-new-workout}
+      "Finish & Save"]]]])
 
 
 
 (defn home []
   [:div
-   (if (not (:add-edit-workout-open? @state))
+   (if (= (:current-view @state) :main-user-panel)
      [main-user-panel @state])
-   (if (:add-edit-workout-open? @state)
-     [bind-fields
-      edit-workout-template
-      state])
+   [:div.row
+    (if (= (:current-view @state) :add-excercise-panel)
+      [bind-fields
+       add-excercise-template
+       state]
+      [:div "NOOOO"])
+    (if (= (:current-view @state) :add-workout-panel)
+      [bind-fields
+       edit-workout-template
+       state])]
    (comment
      (if (:add-edit-workout-open? @state)
        [:div
