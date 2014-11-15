@@ -125,7 +125,7 @@
     [:h1 "HIT Workout Logger"]]
    [row "Username" (:username state-dict)]
    (if (not (:add-edit-workout-open? state-dict))
-     [:button {:type "submit"
+     [:button.btn.btn-lg.btn-primary {:type "submit"
                :class "btn btn-default"
                :onClick open-add-edit-workout}
       "Add Workout"])
@@ -134,7 +134,7 @@
 
    (if (:saved? state-dict)
      [:p "Saved"]
-     [:button {:type "submit"
+     [:button.btn.btn-lg.btn-primary {:type "submit"
                :class "btn btn-default"
                :onClick save-state}
       "Submit"])])
@@ -258,7 +258,7 @@
     [:div.col-md-12
      [:h3 "New Excercise"]]]
    [:div.row
-    [:div.col-md-6
+    [:div.col-md-2
      [:span "Type"]]
     [:div.col-md-4
      [:ul.list-group
@@ -269,25 +269,25 @@
       [:li.list-group-item  {:key :pull-down} "Pull Down"]
       [:li.list-group-item  {:key :pull-back} "Pull back"]]]]
    [:div.row
-      [:div.col-md-1 [:span "Reps"]]
-      [:div.col-md-1
+      [:div.col-md-2 [:span "Reps"]]
+      [:div.col-md-4
        [:input.form-control
         {:field :numeric :id :edited-workout.new.reps}]]]
    [:div.row
-    [:div.col-md-1 [:span "TUL"]]
-    [:div.col-md-1
+    [:div.col-md-2 [:span "TUL"]]
+    [:div.col-md-4
      [:input.form-control
       {:field :numeric :id :edited-workout.new.TUL}]]]
    [:div.row
-    [:div.col-md-1 [:span "Technique"]]
-    [:div.col-md-2
+    [:div.col-md-2 [:span "Technique"]]
+    [:div.col-md-4
      [:select.form-control {:field :list :id :edited-workout.new.technique}
       [:option {:key :super-slow} "Super Slow"]
       [:option {:key :rest-pause} "Rest Pause"]
       [:option {:key :standard} "Standard"]]]]
    [:div.row
-    [:div.col-md-1 [:span "Notes"]]
-    [:div.col-md-2
+    [:div.col-md-2 [:span "Notes"]]
+    [:div.col-md-4
      [:textarea {:field :textarea :id :edited-workout.new.comments}]]]
 
    [:div.row
@@ -319,11 +319,11 @@
    (if (= (:current-view @state) :main-user-panel)
      [main-user-panel @state])
    [:div.row
+    [:h3 "Workout Logging"]
     (if (= (:current-view @state) :add-excercise-panel)
       [bind-fields
        add-excercise-template
-       state]
-      [:div "NOOOO"])
+       state])
     (if (= (:current-view @state) :add-workout-panel)
       [bind-fields
        edit-workout-template
