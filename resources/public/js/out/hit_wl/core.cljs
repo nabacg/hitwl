@@ -11,7 +11,8 @@
 
 (enable-console-print!)
 
-(repl/connect "http://localhost:9000/repl")
+(comment
+  (repl/connect "http://localhost:9000/repl"))
 
 
 (defn console-log [item]
@@ -255,7 +256,7 @@
 
 
 (defn draw-list-group
-  ([id options] (drawlist-group id options :single-select))
+  ([id options] (draw-list-group id options :single-select))
   ([id options select-type]
       [:ul.list-group
        {:field select-type :id id}
