@@ -6,7 +6,8 @@
             [ajax.core :refer [POST GET]]
             [json-html.core :refer [edn->hiccup]]
             [clojure.browser.repl :as repl]
-            [cljs-time.core :as dt]))
+            [cljs-time.core :as dt]
+            [cljs-time.coerce :as dtc]))
 
 (enable-console-print!)
 
@@ -250,7 +251,29 @@
                                 (-> old-state
                                     (assoc :current-view :add-excercise-panel)
                                     (update-in [:edited-workout :new] {}))))}
-       "Add Excercise"]]]])
+      "Add Excercise"]]]])
+
+
+(defn draw-list-group
+  ([id options] (drawlist-group id options :single-select))
+  ([id options select-type]
+      [:ul.list-group
+       {:field select-type :id id}
+       (for [[k v] options]
+         [:li.list-group-item {:key k} v])]))
+
+(defn draw-button-list
+  ([id options] (draw-button-list id options :single-select))
+  ([id options select-type]
+     [:div.btn-group {:field select-type :id id}
+      (for [[k v] options]
+        [:button.btn.btn-default {:key k} v])]))
+
+(defn draw-dropdown [id options]
+  [:select.form-control
+   {:field :list :id id}
+   (for [[k v] options]
+     [:option {:key (keyword k)} v])])
 
 (def add-excercise-template
   [:div
@@ -260,31 +283,55 @@
    [:div.row
     [:div.col-md-2
      [:span "Type"]]
-    [:div.col-md-4
-     [:ul.list-group
-      {:field :single-select :id :edited-workout.new.exercise-type}
-      [:li.list-group-item  {:key :leg-press} "Leg Press"]
-      [:li.list-group-item  {:key :chest-press} "Chest Press"]
-      [:li.list-group-item  {:key :shoulder-press} "Shoulder Press"]
-      [:li.list-group-item  {:key :pull-down} "Pull Down"]
-      [:li.list-group-item  {:key :pull-back} "Pull back"]]]]
+    [:div.col-md-8
+     (draw-button-list :edited-workout.new.exercise-type
+                     [[:leg-press "Leg Press"]
+                      [:chest-press "Chest Press"]
+                      [:shoulder-press "Shoulder Press"]
+                      [:pull-down "Pull Down"]
+                      [:pull-back "Pull Back"]])]]
    [:div.row
-      [:div.col-md-2 [:span "Reps"]]
-      [:div.col-md-4
-       [:input.form-control
-        {:field :numeric :id :edited-workout.new.reps}]]]
+    [:div.col-md-2 [:span "Weight"]]
+    [:div.col-md-4
+     [:input.form-control
+      {:field :numeric :id :edited-workout.new.weight}]]]
+   [:div.row
+    [:div.col-md-2 [:span "Reps"]]
+    [:div.col-md-7
+               (draw-button-list :edited-workout.new.reps (for [i (map str (range 3 20))]
+                                                            [(keyword i) i]))]
+    [:div.col-md-1
+                [:input.form-control
+                 {:field :numeric :id :edited-workout.new.reps}]]]
    [:div.row
     [:div.col-md-2 [:span "TUL"]]
     [:div.col-md-4
      [:input.form-control
-      {:field :numeric :id :edited-workout.new.TUL}]]]
+      {:field :numeric :id :edited-workout.new.TUL}]]
+    [:div.col-md-6
+     [:button.btn.btn-lg
+      {:onClick #(swap! state assoc-in
+                  [:edited-workout :new :start-TUL]
+                  (dtc/to-long (dt/time-now)))}
+      "START!"]
+     [:button.btn.btn-lg
+      {:onClick #(swap! state (fn [old-state]
+                                (let [end-TUL (dt/time-now)
+                                      start-TUL (get-in old-state
+                                                        [:edited-workout :new :start-TUL])
+                                      diff (- (dtc/to-long end-TUL)
+                                              start-TUL)]
+                                  (assoc-in old-state
+                                            [:edited-workout :new :TUL]
+                                            (float (/ diff 1000))))))}
+      "END"]]]
    [:div.row
     [:div.col-md-2 [:span "Technique"]]
     [:div.col-md-4
-     [:select.form-control {:field :list :id :edited-workout.new.technique}
-      [:option {:key :super-slow} "Super Slow"]
-      [:option {:key :rest-pause} "Rest Pause"]
-      [:option {:key :standard} "Standard"]]]]
+     (draw-button-list :edited-workout.new.technique
+                    [[:super-slow "Super Slow"]
+                     [:rest-pause "Rest Pause"]
+                     [:standard "Standard"]])]]
    [:div.row
     [:div.col-md-2 [:span "Notes"]]
     [:div.col-md-4
@@ -304,7 +351,8 @@
                                 (-> old-state
                                     (assoc :current-view :add-excercise-panel)
                                     (update-in [:edited-workout :excercises] conj
-                                               (get-in old-state [:edited-workout :new]))
+                                               (-> (get-in old-state [:edited-workout :new])
+                                                   (dissoc :start-TUL)))
                                     (update-in [:edited-workout :new] {:excercises []}))))}
       "Add Another Excercise"]]
     [:div.col-md-4
