@@ -47,7 +47,7 @@
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
                                    :output-dir "resources/public/js/release"
-                                   :optimizations :none
+                                   :optimizations :release
                                    :source-map "resources/public/js/app.js.map"}}]}
   :profiles
   {:dev {:repl-options {:init-ns hit-wl.handler}
