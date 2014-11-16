@@ -295,15 +295,7 @@
     [:div.col-md-4
      [:input.form-control
       {:field :numeric :id :edited-workout.new.weight}]]]
-   [:div.row
-    [:div.col-md-2 [:span "Reps"]]
-    [:div.col-md-7
-               (draw-button-list :edited-workout.new.reps (for [i (map str (range 3 20))]
-                                                            [(keyword i) i]))]
-    [:div.col-md-1
-                [:input.form-control
-                 {:field :numeric :id :edited-workout.new.reps}]]]
-   [:div.row
+    [:div.row
     [:div.col-md-2 [:span "TUL"]]
     [:div.col-md-4
      [:input.form-control
@@ -326,6 +318,14 @@
                                             (float (/ diff 1000))))))}
       "END"]]]
    [:div.row
+    [:div.col-md-2 [:span "Reps"]]
+    [:div.col-md-7
+               (draw-button-list :edited-workout.new.reps (for [i (map str (range 3 20))]
+                                                            [(keyword i) i]))]
+    [:div.col-md-1
+                [:input.form-control
+                 {:field :numeric :id :edited-workout.new.reps}]]]
+  [:div.row
     [:div.col-md-2 [:span "Technique"]]
     [:div.col-md-4
      (draw-button-list :edited-workout.new.technique
