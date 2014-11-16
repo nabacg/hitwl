@@ -106,24 +106,26 @@
                     :password (creds/hash-bcrypt "stefan123")
                     :roles #{::user}}})
 
-(defn init-cljs-repl []
+
+(comment
+  (defn init-cljs-repl []
   (def repl-env (reset! cemerick.austin.repls/browser-repl-env
                         (cemerick.austin/repl-env)))
   (pprint repl-env))
 
-(comment
-  (-> js/document .-body (.setAttribute "style" "background:white")))
-(defn start-cljs-repl
-  "this will start cljs repl inside clj repl
+  (-> js/document .-body (.setAttribute "style" "background:white"))
+  (defn start-cljs-repl
+    "this will start cljs repl inside clj repl
    which will work from cider only if server was started from same
    repl as they need to share repl-env var set session"[]
-  (cemerick.austin.repls/cljs-repl hit-wl.handler/repl-env))
+   (cemerick.austin.repls/cljs-repl hit-wl.handler/repl-env)))
 
 (defn init-middleware [handler]
   ;;dummy middleware handler to execute some init logic on app startup
   (db/init (get-db-config))
-  (when (= (:env app-config) :dev)
-    (init-cljs-repl))
+  (comment
+    (when (= (:env app-config) :dev)
+      (init-cljs-repl)))
   handler)
 
 (def app
