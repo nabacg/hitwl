@@ -38,14 +38,15 @@
       [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
 
 (def pretty-head
-  [:head [:link {:href "/css/normalize.css" :rel "stylesheet" :type "text/css"}]
-   [:link {:href "/css/foundation.min.css" :rel "stylesheet" :type "text/css"}]
+  [:head
+   [:link {:href "/user/css/bootstrap.min.css" :rel "stylesheet" :type "text/css"}]
+   [:link {:href "/user/css/bootstrap-theme.min.css" :rel "stylesheet" :type "text/css"}]
          [:style {:type "text/css"} "ul { padding-left: 2em }"]
-         [:script {:src "/js/foundation.min.js" :type "text/javascript"}]])
+         [:script {:src "/user/js/bootstrap.min.js" :type "text/javascript"}]])
 
 (defn pretty-body
   [& content]
-  [:body {:class "row"}
+  [:body {:class "container"}
    (into [:div {:class "columns small-12"}] content)])
 
 (defn get-db-config []
@@ -96,13 +97,10 @@
   (GET "/logout" req
     (friend/logout* (redirect (str (:context req) "/"))))
   (GET "/ping" [] (response "pong!"))
-  (comment
-    (GET "/austin-connect-browser-repl.js" []
-         (if (is-dev?)
-           (cemerick.austin.repls/browser-connected-repl-js)
-           (response ""))))
   (route/resources "/user")
   (route/not-found "Not Found"))
+
+
 
 ; a dummy in-memory user "database"
 (def users {"root" {:username "root"
@@ -112,6 +110,11 @@
                     :password (creds/hash-bcrypt "stefan123")
                     :roles #{::user}}})
 
+(comment
+    (GET "/austin-connect-browser-repl.js" []
+         (if (is-dev?)
+           (cemerick.austin.repls/browser-connected-repl-js)
+           (response ""))))
 
 
 (comment
