@@ -24,6 +24,9 @@
 
 (defconfig app-config (io/resource "config.edn"))
 
+(defn is-dev? []
+  (= :dev (:env app-config)))
+
 (def login-form
   [:div {:class "row"}
    [:div {:class "columns small-12"}
@@ -94,7 +97,9 @@
     (friend/logout* (redirect (str (:context req) "/"))))
   (GET "/ping" [] (response "pong!"))
   (GET "/austin-connect-browser-repl.js" []
-       (cemerick.austin.repls/browser-connected-repl-js))
+       (if (is-dev?)
+         (cemerick.austin.repls/browser-connected-repl-js)
+         (response "")))
   (route/resources "/user")
   (route/not-found "Not Found"))
 
@@ -107,25 +112,27 @@
                     :roles #{::user}}})
 
 
-(comment
-  (defn init-cljs-repl []
+
+(defn init-cljs-repl []
   (def repl-env (reset! cemerick.austin.repls/browser-repl-env
                         (cemerick.austin/repl-env)))
   (pprint repl-env))
 
-  (-> js/document .-body (.setAttribute "style" "background:white"))
-  (defn start-cljs-repl
-    "this will start cljs repl inside clj repl
+(comment
+  (-> js/document .-body (.setAttribute "style" "background:white")))
+
+(defn start-cljs-repl
+  "this will start cljs repl inside clj repl
    which will work from cider only if server was started from same
    repl as they need to share repl-env var set session"[]
-   (cemerick.austin.repls/cljs-repl hit-wl.handler/repl-env)))
+   (cemerick.austin.repls/cljs-repl hit-wl.handler/repl-env))
 
 (defn init-middleware [handler]
   ;;dummy middleware handler to execute some init logic on app startup
   (db/init (get-db-config))
-  (comment
-    (when (= (:env app-config) :dev)
-      (init-cljs-repl)))
+  (comment)
+  (when (is-dev?)
+    (init-cljs-repl))
   handler)
 
 (def app
