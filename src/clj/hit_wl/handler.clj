@@ -132,9 +132,9 @@
 (defn init-middleware [handler]
   ;;dummy middleware handler to execute some init logic on app startup
   (db/init (get-db-config))
-  (comment)
-  (when (is-dev?)
-    (init-cljs-repl))
+  (comment
+    (when (is-dev?)
+      (init-cljs-repl)))
   handler)
 
 (def app
