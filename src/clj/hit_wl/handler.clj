@@ -16,7 +16,6 @@
             [hiccup.element :as e]
             [clojure.edn :as edn]
             [cemerick.friend :as friend]
-            [cemerick.austin]
             [clojure.java.io :as io]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
