@@ -24,8 +24,7 @@
   :source-paths ["src/clj" "src/cljs"]
   :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]
             [lein-pdo "0.1.1"]
-            [jarohen/lein-frodo "0.4.1"]
-            [com.cemerick/austin "0.1.5"]]
+            [jarohen/lein-frodo "0.4.1"]]
   :aliases {"up" ["pdo" "cljsbuild" "auto" "dev," "frodo"]
             "prod-release" ["pdo" "cljsbuild" "once" "release," "frodo"]}
   :frodo/config-resource "config.edn"
