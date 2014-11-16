@@ -382,7 +382,7 @@
    (if (= (:current-view @state) :main-user-panel)
      [main-user-panel @state])
    [:div.row
-    [:h3 "Workout Logging v0.1"]
+    [:h3 " "]
     (if (= (:current-view @state) :add-excercise-panel)
       [bind-fields
        add-excercise-template
