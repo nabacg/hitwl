@@ -30,7 +30,7 @@
   :frodo/config-resource "config.edn"
   :cljsbuild {:repl-listen-port 9000
               :repl-launch-commands
-              :output-dir "resources/public/js/out"
+
               {
                "phantom" ["phantomjs"
                           "phantom/repl.js"
@@ -40,13 +40,15 @@
               :builds [{:id "dev"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
+                                   :output-dir "resources/public/js/out"
                                    :optimizations :none
                                    :source-map true}}
                        {:id "release"
                         :source-paths ["src/cljs"]
                         :compiler {:output-to "resources/public/js/app.js"
+                                   :output-dir "resources/public/js/release"
                                    :optimizations :advanced
-                                   :source-map true}}]}
+                                   :source-map "resources/public/js/app.js.map"}}]}
   :profiles
   {:dev {:repl-options {:init-ns hit-wl.handler}
          :dependencies [[ring-mock "0.1.5"]]

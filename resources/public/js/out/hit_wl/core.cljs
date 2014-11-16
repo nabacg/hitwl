@@ -11,7 +11,13 @@
 
 (enable-console-print!)
 
-(comment
+(def is-dev?
+  (>  (->  (.-URL js/document)
+           (.search "localhost"))
+      -1))
+
+(comment)
+(when is-dev?
   (repl/connect "http://localhost:9000/repl"))
 
 
@@ -141,17 +147,25 @@
                :onClick save-state}
       "Submit"])])
 
-(defn append-new-workout []
-  (let [new-workouts (conj (:workouts @state)
-                           (->> (:edited-workout @state)
+(defn append-new-workout [old-state]
+  (let [new-workouts (conj (:workouts old-state)
+                           (->> (:edited-workout old-state)
                                 (map (fn [[k v]] [(name k) (str v)]))
                                 (into {:is-new? true})))]
 
-    (swap! state #(-> %
-                     (assoc :workouts new-workouts)
-                     (assoc :edited-workout {})
-                     (assoc :current-view :main-user-panel)))
-    (console-log (:workouts @state))))
+    (-> old-state
+        (assoc :workouts new-workouts)
+        (assoc :edited-workout {})
+        (assoc :current-view :main-user-panel))))
+
+(defn append-new-excercise [old-state]
+  (if (seq (get-in old-state [:edited-workout :new]))
+    (-> old-state
+        (update-in [:edited-workout :excercises] conj
+                   (-> (get-in old-state [:edited-workout :new])
+                       (dissoc :start-TUL)))
+        (update-in [:edited-workout :new] {:excercises []}))
+    old-state))
 
 (defn draw-excercise-panel []
   (for [e (get-in @state [:edited-workout :excercises])]
@@ -351,14 +365,14 @@
       {:onClick #(swap! state (fn [old-state]
                                 (-> old-state
                                     (assoc :current-view :add-excercise-panel)
-                                    (update-in [:edited-workout :excercises] conj
-                                               (-> (get-in old-state [:edited-workout :new])
-                                                   (dissoc :start-TUL)))
-                                    (update-in [:edited-workout :new] {:excercises []}))))}
+                                    append-new-excercise)))}
       "Add Another Excercise"]]
     [:div.col-md-4
      [:button.btn.btn-block
-      {:onClick append-new-workout}
+      {:onClick #(swap! state (fn [old-state]
+                                (-> old-state
+                                    append-new-excercise
+                                    append-new-workout)))}
       "Finish & Save"]]]])
 
 
@@ -368,7 +382,7 @@
    (if (= (:current-view @state) :main-user-panel)
      [main-user-panel @state])
    [:div.row
-    [:h3 "Workout Logging"]
+    [:h3 "Workout Logging v0.1"]
     (if (= (:current-view @state) :add-excercise-panel)
       [bind-fields
        add-excercise-template
@@ -388,10 +402,10 @@
         [bind-fields
          add-excercise-form
          state]]))
-
-   [:hr]
-   [:h1 "State"]
-   [edn->hiccup @state]])
+   (when is-dev?
+     [:hr]
+     [:h1 "State"]
+     [edn->hiccup @state])])
 
 (reagent/render-component [home] (.getElementById js/document "content"))
 
