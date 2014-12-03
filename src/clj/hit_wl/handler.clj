@@ -28,26 +28,32 @@
   (= :dev (:env app-config)))
 
 (def login-form
-  [:div {:class "row"}
-   [:div {:class "columns small-12"}
-    [:h3 "Login"]
-    [:div {:class "row"}
-     [:form {:method "POST" :action "login" :class "columns small-4"}
-      [:div "Username" [:input {:type "text" :name "username"}]]
-      [:div "Password" [:input {:type "password" :name "password"}]]
-      [:div [:input {:type "submit" :class "button" :value "Login"}]]]]]])
+  [:div {:class "container"}
+
+   [:form {:method "POST" :action "login" :class "form-signin" :role "form"}
+    [:h2 {:class "form-signin-heading"} "Please sign in"]
+    [:label {:for "username" :class "sr-only"} "Username"]
+    [:input {:type :input :name "username" :id "username" :class "form-control"
+             :placeholder "Username"
+             :required true :autofocus true}]
+    [:label {:for "password" :class "sr-only"} "Password"]
+    [:input {:type "password" :id "password" :class "form-control" :placeholder "Password"
+             :name "password"}]
+    [:button {:class  "btn btn-lg btn-primary btn-block" :type :submit}
+     "Sign in"]]])
 
 (def pretty-head
   [:head
    [:link {:href "/user/css/bootstrap.min.css" :rel "stylesheet" :type "text/css"}]
    [:link {:href "/user/css/bootstrap-theme.min.css" :rel "stylesheet" :type "text/css"}]
+   [:link {:href "/user/css/signin.css" :rel "stylesheet" :type "text/css"}]
          [:style {:type "text/css"} "ul { padding-left: 2em }"]
          [:script {:src "/user/js/bootstrap.min.js" :type "text/javascript"}]])
 
 (defn pretty-body
   [& content]
-  [:body {:class "container"}
-   (into [:div {:class "columns small-12"}] content)])
+  [:body
+   (into [:div ] content)])
 
 (defn get-db-config []
   (pprint (app-config))
@@ -106,9 +112,12 @@
 (def users {"root" {:username "root"
                     :password (creds/hash-bcrypt "admin_password")
                     :roles #{::admin}}
-            "Stefan" {:username "Stefan"
+            "Stefan" {:username "Stefan@at.at"
                     :password (creds/hash-bcrypt "stefan123")
-                    :roles #{::user}}})
+                      :roles #{::user}}
+            "stef@at.at" {:username "stef@at.at"
+                          :password (creds/hash-bcrypt "stef")
+                          :roles #{::user}}})
 
 (comment
     (GET "/austin-connect-browser-repl.js" []

@@ -312,14 +312,14 @@
       {:field :numeric :id :edited-workout.new.weight}]]]
     [:div.row
     [:div.col-md-2 [:span "TUL"]]
-    [:div.col-md-4
+    [:div.col-md-2
      [:input.form-control
       {:field :numeric :id :edited-workout.new.TUL}]]
     [:div.col-md-6
      [:button.btn.btn-lg
       {:onClick #(swap! state assoc-in
-                  [:edited-workout :new :start-TUL]
-                  (dtc/to-long (dt/time-now)))}
+                        [:edited-workout :new :start-TUL]
+                        (dtc/to-long (dt/time-now)))}
       "START!"]
      [:button.btn.btn-lg
       {:onClick #(swap! state (fn [old-state]

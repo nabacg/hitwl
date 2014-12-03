@@ -3,7 +3,8 @@
   :db-name "hit-wl-db"}
  :nomad/environments
  {"dev"
-  {:db-config
+  {:env :dev
+   :db-config
    {:collection-name "workouts"
     :db-name "hit-wl-db"}
    :frodo/config {:nrepl {:port 7779
@@ -11,7 +12,8 @@
                   :web {:port 7777
                         :app hit-wl.handler/frodo-app}}}
   "heroku"
-  {:db-config
+  {:env :heroku
+   :db-config
    {:collection-name "workouts"
     :db-name "hit-wl-db"
     :uri #nomad/env-var "HIT_WL_MONGO_URL"}
