@@ -17,15 +17,36 @@
             [clojure.edn :as edn]
             [cemerick.friend :as friend]
             [clojure.java.io :as io]
+            [cemerick.friend.openid :as openid]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds])
             [nomad :refer [defconfig]]
-            [frodo.web :refer [App]]))
+            [frodo.web :refer [App]])
+  (:import java.net.URI))
 
 (defconfig app-config (io/resource "config.edn"))
 
+(def providers [{:name "Google" :url "https://www.google.com/accounts/o8/id"}
+                {:name "Yahoo" :url "http://me.yahoo.com/"}
+                {:name "AOL" :url "http://openid.aol.com/"}
+                {:name "Wordpress.com" :url "http://username.wordpress.com"}
+                {:name "MyOpenID" :url "http://username.myopenid.com/"}])
+
 (defn is-dev? []
   (= :dev (:env app-config)))
+
+(defn resolve-uri
+  [context uri]
+  (let [context (if (instance? URI context) context (URI. context))]
+    (.resolve context uri)))
+
+(defn context-uri
+  "Resolves a [uri] against the :context URI (if found) in the provided
+   Ring request.  (Only useful in conjunction with compojure.core/context.)"
+  [{:keys [context]} uri]
+  (if-let [base (and context (str context "/"))]
+    (str (resolve-uri base uri))
+    uri))
 
 (def login-form
   [:div {:class "container"}
@@ -60,6 +81,34 @@
   (:db-config (app-config)))
 
 
+(defn open-id-login-form [req]
+  [:div {:class "container"}
+   [:h2 "Authenticating with various services using OpenID"]
+   [:h3 "Current Status " [:small "(this will change when you log in/out)"]]
+   (if-let [auth (friend/current-authentication req)]
+     [:p "Some information delivered by your OpenID provider:"
+      [:ul (for [[k v] auth
+                 :let [[k v] (if (= :identity k)
+                               ["Your OpenID identity" (str (subs v 0 (* (count v) 2/3)) "…")]
+                               [k v])]]
+             [:li [:strong (str (name k) ": ")] v])]]
+     [:div
+      [:h3 "Login with…"]
+      (for [{:keys [name url]} providers
+            :let [base-login-url (context-uri req (str "/login?identifier=" url))
+                  dom-id (str (gensym))]]
+        [:form {:method "POST" :action (context-uri req "login")
+                :onsubmit (when (.contains ^String url "username")
+                            (format "var input = document.getElementById(%s); input.value = input.value.replace('username', prompt('What is your %s username?')); return true;"
+                                    (str \' dom-id \') name))}
+         [:input {:type "hidden" :name "identifier" :value url :id dom-id}]
+         [:input {:type "submit" :class "button" :value name}]])
+      [:p "…or, with a user-provided OpenID URL:"]
+      [:form {:method "POST" :action (context-uri req "login")}
+       [:input {:type "text" :name "identifier" :style "width:250px;"}]
+       [:input {:type "submit" :class "button" :value "Login"}]]])
+   [:h3 "Logging out"]
+   [:p [:a {:href (context-uri req "logout")} "Click here to log out"] "."]])
 
 (defn get-userdata [username]
   {:username username
@@ -83,22 +132,26 @@
 
 (defroutes app-routes
   (GET "/" [] (h/html5 pretty-head (pretty-body
-                                   [:a {:href "/login"} "Login"])))
+                                   [:a {:href "/signin"} "Login"])))
   (GET "/user/profile" []
-       (friend/authorize #{::user}
+       (friend/authenticated
                          (slurp "resources/public/html/index.html")))
   (GET "/user/data" request
-       (friend/authorize #{::user}
+       (friend/authenticated
                          (->
-                          (:username (friend/current-authentication))
+                          (:email (friend/current-authentication))
                           (get-userdata)
                           response)))
   (POST "/user/save" {body :body}
-        (friend/authorize #{::user}
+        (friend/authenticated
                           (do (save-document body)
                               (response
                                {:status  "OK"}))))
-  (GET "/login" request
+  (GET "/signin" request
+       (h/html5
+        pretty-head
+        (pretty-body (open-id-login-form request))))
+  (GET "/login2" request
        (h/html5 pretty-head (pretty-body login-form)))
   (GET "/logout" req
     (friend/logout* (redirect (str (:context req) "/"))))
@@ -153,16 +206,15 @@
   (-> (handler/site app-routes)
       (init-middleware)
       (friend/authenticate {:allow-anon? true
-                            :login-uri "/login"
                             :default-landing-uri "/user/profile"
                             :unauthorized-handler #(do
                                                      ( println (friend/current-authentication))
                                                      ( -> (h/html5 [:h2 "You do not have sufficient privileges to access " (:uri %)])
                                                           response
                                                           (status 401)))
-                            :credential-fn
-                            (partial creds/bcrypt-credential-fn users)
-                            :workflows [(workflows/interactive-form)]})
+                            :workflows [(openid/workflow
+                                         :openid-uri "/login"
+                                         :credential-fn identity)]})
       (ring-json/wrap-json-body {:keywords? true})
       (ring-json/wrap-json-response)
       (keyword-params/wrap-keyword-params)
