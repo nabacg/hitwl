@@ -116,7 +116,7 @@
                   (filter #(= (:username %) username))
                   (map #(dissoc % :_id))
                   (map #(->> %
-                             (map (fn [[k v]] [k (if (= k :date) v
+                             (map (fn [[k v]] [k (if (contains? #{:date :username} k) v
                                                     (edn/read-string v))]))
                              (into {})))
                   (into []))})

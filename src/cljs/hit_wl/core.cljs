@@ -129,8 +129,8 @@
 
 (defn main-user-panel [state-dict]
   [:div
-   [:div.page-header
-    [:h1 "HIT Workout Logger"]]
+   [:div
+    [:h1.page-header "HIT Workout Logger"]]
    [row "Username" (:username state-dict)]
    (if (not (:add-edit-workout-open? state-dict))
      [:button.btn.btn-lg.btn-primary {:type "submit"
